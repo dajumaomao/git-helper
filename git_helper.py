@@ -23,7 +23,10 @@ def tag_prd(task):
     # push 合并之后的任务分支
     work_repo.remote().push()
     # checkout master分支
+    # todo 会丢commit
+    work_repo.git.stash()
     checkout_branch('master')
+    work_repo.git.stash('pop')
     # 把任务分支合并到master分支上
     merge_code('master', tagged_branch)
     prd_tag = "PRD_" + task
