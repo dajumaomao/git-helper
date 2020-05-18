@@ -10,14 +10,14 @@ def tag_prd(task):
     分支打prd
     """
     tagged_branch = "BRANCH_" + task
-    if not found_origin_branch(tagged_branch):
-        raise ValueError("task号没有远程分支")
+    if not found_origin_branch('origin/' + tagged_branch):
+        raise ValueError("task号没有远程分支:{}".format(tagged_branch))
     # checkout 要打tag 的分支
     checkout_branch(tagged_branch)
     # 确认与远端同步
     work_repo.remote().pull()
     # 获取最新的tag
-    latest_prd = get_latest_prd_tag()
+    latest_prd = 'master' if get_latest_prd_tag() is None else get_latest_prd_tag()
     # 将最新的tag 合并到当前分支
     merge_code(tagged_branch, latest_prd)
     # push 合并之后的任务分支
@@ -67,7 +67,10 @@ def get_latest_prd_tag():
     """
     获取最新的PRD tag
     """
-    return str(sorted(work_repo.tags, key=lambda t: t.commit.committed_datetime)[-1])
+    tags = work_repo.tags
+    if len(tags) > 0:
+        return str(sorted(tags, key=lambda t: t.commit.committed_datetime)[-1])
+    return None
 
 
 def create_origin_branch(branch):
@@ -131,8 +134,8 @@ def check_current_branch(branch):
     """
     检查当前分支是否正确
     """
-    current_branch = work_repo.active_branch()
-    if current_branch != branch:
+    current_branch = work_repo.active_branch
+    if current_branch.name != branch:
         raise ValueError("当前分支不正确 branch:{}".format(branch))
 
 
